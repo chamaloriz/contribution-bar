@@ -1,0 +1,10 @@
+[package]
+name = "tray-contribs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+image = "0.25.8"
+objc2-core-foundation = "0.3.2"
+tray-icon = "0.21.1"
+winit = "0.30.12"

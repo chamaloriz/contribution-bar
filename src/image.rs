@@ -1,7 +1,10 @@
 use image::{ImageBuffer, Rgba, RgbaImage};
 
+const NUMBER_OF_SQUARES: usize = 7;
+const SQUARE_SIZE: usize = 31;
+const SPACING: usize = 5;
 const IMAGE_HEIGHT: u32 = 31;
-const IMAGE_WIDTH: u32 = 254;
+const IMAGE_WIDTH: u32 = (((SQUARE_SIZE + SPACING) * NUMBER_OF_SQUARES) - SPACING) as u32;
 
 fn get_color(name: usize) -> Rgba<u8> {
     match name {
@@ -14,19 +17,16 @@ fn get_color(name: usize) -> Rgba<u8> {
 }
 
 pub fn generate_image() -> RgbaImage {
-    let square_size = 31;
-    let spacing = 5;
-
     let mut img: RgbaImage = ImageBuffer::new(IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    for i in 0..7 {
+    for i in 0..NUMBER_OF_SQUARES {
         let color = get_color(i);
-        let x_start = i * (square_size + spacing);
+        let x_start = i * (SQUARE_SIZE + SPACING);
 
-        let square_center = ((x_start + square_size / 2) as u32, (square_size / 2) as u32);
+        let square_center = ((x_start + SQUARE_SIZE / 2) as u32, (SQUARE_SIZE / 2) as u32);
 
-        for pixel_y in 0..square_size {
-            for x in 0..square_size {
+        for pixel_y in 0..SQUARE_SIZE {
+            for x in 0..SQUARE_SIZE {
                 let pixel_x = x_start + x;
 
                 let distance_to_center = ((pixel_x as f64 - square_center.0 as f64).powi(2)

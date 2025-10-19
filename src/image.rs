@@ -1,6 +1,6 @@
 use image::{ImageBuffer, Rgba, RgbaImage};
 
-const IMAGE_HEIGHT: u32 = 32;
+const IMAGE_HEIGHT: u32 = 31;
 const IMAGE_WIDTH: u32 = 254;
 
 fn get_color(name: usize) -> Rgba<u8> {
@@ -14,25 +14,38 @@ fn get_color(name: usize) -> Rgba<u8> {
 }
 
 pub fn generate_image() -> RgbaImage {
-    let square_size = 32;
+    let square_size = 31;
     let spacing = 5;
 
     let mut img: RgbaImage = ImageBuffer::new(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     for i in 0..7 {
         let color = get_color(i);
-
         let x_start = i * (square_size + spacing);
-        for y in 0..square_size {
+
+        let square_center = ((x_start + square_size / 2) as u32, (square_size / 2) as u32);
+
+        for pixel_y in 0..square_size {
             for x in 0..square_size {
-                if x_start + x < IMAGE_WIDTH as usize && y < IMAGE_HEIGHT as usize {
-                    img.put_pixel((x_start + x) as u32, y as u32, color);
+                let pixel_x = x_start + x;
+
+                let distance_to_center = ((pixel_x as f64 - square_center.0 as f64).powi(2)
+                    + (pixel_y as f64 - square_center.1 as f64).powi(2))
+                .sqrt();
+
+                if distance_to_center >= 18.0 {
+                    // round the corner
+                    continue;
+                }
+
+                if x_start + x < IMAGE_WIDTH as usize && pixel_y < IMAGE_HEIGHT as usize {
+                    img.put_pixel(pixel_x as u32, pixel_y as u32, color);
                 }
             }
         }
     }
 
-    return img;
+    img
 }
 
 pub fn generate_icon() -> tray_icon::Icon {

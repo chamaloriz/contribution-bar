@@ -7,8 +7,26 @@ use winit::{
     event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
 };
 
+mod github;
 mod image;
+use github::get_contributions;
 use image::generate_icon;
+use serde::{Deserialize, Serialize};
+
+const REFRESH_DELAY_SECS: u64 = 3600;
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AppConfig {
+    github_username: String,
+}
+
+impl ::std::default::Default for AppConfig {
+    fn default() -> Self {
+        Self {
+            github_username: "chamaloriz".to_string(),
+        }
+    }
+}
 
 #[derive(Debug)]
 enum UserEvent {}
@@ -16,30 +34,34 @@ enum UserEvent {}
 struct Application {
     tray_icon: Option<TrayIcon>,
     next_switch: Instant,
+    config: AppConfig,
 }
 
 impl Application {
     fn new() -> Self {
         Self {
             tray_icon: None,
-            next_switch: Instant::now() + Duration::from_secs(10),
+            next_switch: Instant::now() + Duration::from_secs(REFRESH_DELAY_SECS),
+            config: confy::load("contribution-bar", None).expect("issue in config loading"),
         }
     }
 
-    fn generate_icon() -> tray_icon::Icon {
-        generate_icon()
+    fn generate_icon(&self) -> tray_icon::Icon {
+        let username = &self.config.github_username;
+        let contributions = get_contributions(username);
+        generate_icon(contributions)
     }
 
     fn set_tray_icon(&mut self) {
-        let icon = Self::generate_icon();
+        let icon = self.generate_icon();
 
         if let Some(tray_icon) = &mut self.tray_icon {
             tray_icon.set_icon(Some(icon)).unwrap();
         }
     }
 
-    fn new_tray_icon() -> TrayIcon {
-        let icon = Self::generate_icon();
+    fn new_tray_icon(&self) -> TrayIcon {
+        let icon = self.generate_icon();
 
         TrayIconBuilder::new()
             .with_tooltip("Commit History")
@@ -57,14 +79,14 @@ impl ApplicationHandler<UserEvent> for Application {
     fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
         match cause {
             StartCause::Init => {
-                self.tray_icon = Some(Self::new_tray_icon());
+                self.tray_icon = Some(self.new_tray_icon());
                 let rl = CFRunLoop::main().unwrap();
                 CFRunLoop::wake_up(&rl);
                 event_loop.set_control_flow(ControlFlow::WaitUntil(self.next_switch));
             }
             StartCause::ResumeTimeReached { .. } => {
                 self.set_tray_icon();
-                self.next_switch = Instant::now() + Duration::from_secs(10);
+                self.next_switch = Instant::now() + Duration::from_secs(REFRESH_DELAY_SECS);
                 event_loop.set_control_flow(ControlFlow::WaitUntil(self.next_switch));
             }
             _ => {}

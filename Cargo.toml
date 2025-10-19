@@ -4,7 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-image = "0.25.8"
-objc2-core-foundation = "0.3.2"
-tray-icon = "0.21.1"
-winit = "0.30.12"
+chrono = {version = "=0.4.42", features = ["serde"]}
+confy = "=1.0.0"
+image = "=0.25.8"
+objc2-core-foundation = "=0.3.2"
+reqwest = {version = "=0.12.24", features = ["blocking"]}
+serde = {version = "=1.0.228", features = ["derive"]}
+serde_json = "=1.0.145"
+tray-icon = "=0.21.1"
+winit = "=0.30.12"

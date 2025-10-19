@@ -17,12 +17,14 @@ const REFRESH_DELAY_SECS: u64 = 3600;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct AppConfig {
+    version: i32,
     github_username: String,
 }
 
 impl ::std::default::Default for AppConfig {
     fn default() -> Self {
         Self {
+            version: 1,
             github_username: "chamaloriz".to_string(),
         }
     }

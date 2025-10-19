@@ -47,3 +47,8 @@ pub fn get_contributions(username: &str) -> Vec<u8> {
     recent_counts.reverse();
     recent_counts.into_iter().map(|(_, level)| level).collect()
 }
+
+#[test]
+pub fn fetch_github_contribution_data() {
+    fetch_contributions("chamaloriz");
+}

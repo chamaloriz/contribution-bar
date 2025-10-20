@@ -31,6 +31,8 @@ jobs:
         run: rsync -a assets/info.plist temp_dir/Contents/
       - name: Move the icon.icns
         run: rsync -a assets/icon.icns temp_dir/Contents/Resources/
+      - name: Move the icons folder
+        run: rsync -a assets/icons/ temp_dir/Contents/Resources/icons/
       - name: Move the Executable File
         run: rsync -a target/${{ env.APP_ARCHITECTURE }}/release/${{ env.BINARY_NAME }} temp_dir/Contents/MacOS/
       - name: Rename temp_dir to PROJECT_NAME.app

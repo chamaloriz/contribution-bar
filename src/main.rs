@@ -11,7 +11,7 @@ use winit::{
 mod github;
 mod image;
 use github::get_contributions;
-use image::generate_icon;
+use image::{generate_icon, load_icon};
 use serde::{Deserialize, Serialize};
 
 const REFRESH_DELAY_SECS: u64 = 3600;
@@ -49,10 +49,18 @@ impl Application {
         }
     }
 
-    fn generate_icon(&self) -> tray_icon::Icon {
+    fn generate_icon(&mut self) -> tray_icon::Icon {
         let username = &self.config.github_username;
-        let contributions = get_contributions(username);
-        generate_icon(contributions)
+        match get_contributions(username) {
+            Ok(contributions) => {
+                self.next_switch = Instant::now() + Duration::from_secs(REFRESH_DELAY_SECS);
+                generate_icon(contributions)
+            }
+            Err(_error) => {
+                self.next_switch = Instant::now() + Duration::from_secs(30);
+                load_icon("warning")
+            }
+        }
     }
 
     fn set_tray_icon(&mut self) {
@@ -63,7 +71,7 @@ impl Application {
         }
     }
 
-    fn new_tray_icon(&self) -> TrayIcon {
+    fn new_tray_icon(&mut self) -> TrayIcon {
         let icon = self.generate_icon();
 
         TrayIconBuilder::new()
@@ -89,7 +97,6 @@ impl ApplicationHandler<UserEvent> for Application {
             }
             StartCause::ResumeTimeReached { .. } => {
                 self.set_tray_icon();
-                self.next_switch = Instant::now() + Duration::from_secs(REFRESH_DELAY_SECS);
                 event_loop.set_control_flow(ControlFlow::WaitUntil(self.next_switch));
             }
             _ => {}
@@ -108,6 +115,17 @@ impl ApplicationHandler<UserEvent> for Application {
 }
 
 fn main() {
+    #[cfg(not(debug_assertions))]
+    {
+        std::env::set_current_dir(
+            std::env::current_exe()
+                .ok()
+                .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+                .expect("Failed to get executable directory"),
+        )
+        .expect("Failed to set working directory");
+    }
+
     let mut builder = EventLoop::<UserEvent>::with_user_event();
     let event_loop = builder
         .with_activation_policy(ActivationPolicy::Accessory)

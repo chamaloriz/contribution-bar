@@ -1,5 +1,11 @@
 use image::{ImageBuffer, Rgba, RgbaImage};
 
+#[cfg(debug_assertions)]
+const STATIC_FILE_PATH: &str = "assets";
+
+#[cfg(not(debug_assertions))]
+const STATIC_FILE_PATH: &str = "../Resources";
+
 pub const NUMBER_OF_SQUARES: usize = 7;
 const SQUARE_SIZE: usize = 31;
 const SPACING: usize = 5;
@@ -52,6 +58,18 @@ pub fn generate_icon(contributions: Vec<u8>) -> tray_icon::Icon {
     let img = generate_image(contributions);
     let rgba = img.into_raw();
     tray_icon::Icon::from_rgba(rgba, IMAGE_WIDTH, IMAGE_HEIGHT).expect("Failed to create icon")
+}
+
+pub fn load_icon(icon: &str) -> tray_icon::Icon {
+    let (icon_rgba, icon_width, icon_height) = {
+        let image = image::open(format!("{}/icons/{}-icon.png", STATIC_FILE_PATH, icon))
+            .expect("Failed to open icon path")
+            .into_rgba8();
+        let (width, height) = image.dimensions();
+        let rgba = image.into_raw();
+        (rgba, width, height)
+    };
+    tray_icon::Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
 }
 
 #[test]

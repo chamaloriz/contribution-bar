@@ -16,23 +16,32 @@ struct ApiData {
     contributions: Vec<Contribution>,
 }
 
-fn fetch_contributions(username: &str) -> ApiData {
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum FetchingError {
+    #[error("HTTP request error: {0}")]
+    Reqwest(#[from] reqwest::Error),
+
+    #[error("JSON parse error: {0}")]
+    Serde(#[from] serde_json::Error),
+}
+
+fn fetch_contributions(username: &str) -> Result<ApiData, FetchingError> {
     let url = format!(
         "https://github-contributions-api.jogruber.de/v4/{}",
         username
     );
-    let body = get(url)
-        .expect("issue while doing the request")
-        .text()
-        .expect("issue while getting the text");
+    let body = get(url)?.text()?;
 
-    let parsed: ApiData = serde_json::from_str(&body).expect("Failed to parse JSON");
+    let parsed: ApiData = serde_json::from_str(&body)?;
 
-    parsed
+    Ok(parsed)
 }
 
-pub fn get_contributions(username: &str) -> Vec<u8> {
-    let api_data = fetch_contributions(username);
+pub fn get_contributions(username: &str) -> Result<Vec<u8>, FetchingError> {
+    let api_data = fetch_contributions(username)?;
+
     let today = Utc::now().naive_utc().date();
     let end_date = today - Duration::days(6);
 
@@ -45,7 +54,7 @@ pub fn get_contributions(username: &str) -> Vec<u8> {
 
     recent_counts.sort_by_key(|(date, _)| *date);
     recent_counts.reverse();
-    recent_counts.into_iter().map(|(_, level)| level).collect()
+    Ok(recent_counts.into_iter().map(|(_, level)| level).collect())
 }
 
 #[test]

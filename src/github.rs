@@ -59,5 +59,5 @@ pub fn get_contributions(username: &str) -> Result<Vec<u8>, FetchingError> {
 
 #[test]
 pub fn fetch_github_contribution_data() {
-    fetch_contributions("chamaloriz");
+    let _ = fetch_contributions("chamaloriz");
 }

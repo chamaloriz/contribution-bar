@@ -405,6 +405,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "contribution-bar"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "confy",
+ "image",
+ "objc2-core-foundation",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tray-icon",
+ "winit",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3320,21 +3335,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9d12581f227e93f094d3af2ae690a574abb8a2b9b7a96e7cfe9647b2b617678"
 dependencies = [
  "once_cell",
-]
-
-[[package]]
-name = "tray-contribs"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "confy",
- "image",
- "objc2-core-foundation",
- "reqwest",
- "serde",
- "serde_json",
- "tray-icon",
- "winit",
 ]
 
 [[package]]

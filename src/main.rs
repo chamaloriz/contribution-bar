@@ -5,6 +5,7 @@ use winit::{
     application::ApplicationHandler,
     event::StartCause,
     event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
+    platform::macos::{ActivationPolicy, EventLoopBuilderExtMacOS},
 };
 
 mod github;
@@ -107,7 +108,11 @@ impl ApplicationHandler<UserEvent> for Application {
 }
 
 fn main() {
-    let event_loop = EventLoop::<UserEvent>::with_user_event().build().unwrap();
+    let mut builder = EventLoop::<UserEvent>::with_user_event();
+    let event_loop = builder
+        .with_activation_policy(ActivationPolicy::Accessory)
+        .build()
+        .unwrap();
 
     let mut app = Application::new();
 

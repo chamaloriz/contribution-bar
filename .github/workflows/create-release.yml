@@ -1,0 +1,47 @@
+name: Build & Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release Version'
+        required: true
+
+env:
+  BINARY_NAME: contribution-bar
+  PROJECT_NAME: ContributionBar
+  APP_ARCHITECTURE: aarch64-apple-darwin
+
+jobs:
+  build_deploy:
+    name: Build & Release
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ env.APP_ARCHITECTURE }}
+      - name: Build Cargo Project
+        run: cargo build --release --target ${{ env.APP_ARCHITECTURE }}
+      - name: Make Rust binary executable
+        run: chmod +x ./target/${{ env.APP_ARCHITECTURE }}/release/${{ env.BINARY_NAME }}
+      - name: Create temporary directory with the correct structure
+        run: mkdir -p temp_dir/Contents/{MacOS,Resources}
+      - name: Move the Info.plist
+        run: rsync -a assets/info.plist temp_dir/Contents/
+      - name: Move the icon.icns
+        run: rsync -a assets/icon.icns temp_dir/Contents/Resources/
+      - name: Move the Executable File
+        run: rsync -a target/${{ env.APP_ARCHITECTURE }}/release/${{ env.BINARY_NAME }} temp_dir/Contents/MacOS/
+      - name: Rename temp_dir to PROJECT_NAME.app
+        run: mv temp_dir "${{ env.PROJECT_NAME }}.app"
+      - name: Zip the .app bundle
+        run: |
+          zip -r "${{ env.APP_ARCHITECTURE }}-${{ github.event.inputs.tag }}.zip" "${{ env.PROJECT_NAME }}.app"
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.APP_ARCHITECTURE }}-${{ github.event.inputs.tag }}.zip
+          tag_name: ${{ github.event.inputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

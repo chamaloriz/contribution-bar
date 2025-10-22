@@ -1,12 +1,13 @@
-use objc2_core_foundation::CFRunLoop;
 use std::time::{Duration, Instant};
 use tray_icon::{TrayIcon, TrayIconBuilder};
 use winit::{
     application::ApplicationHandler,
     event::StartCause,
     event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
-    platform::macos::{ActivationPolicy, EventLoopBuilderExtMacOS},
 };
+
+#[cfg(target_os = "macos")]
+use winit::platform::macos::{ActivationPolicy, EventLoopBuilderExtMacOS};
 
 mod github;
 mod image;
@@ -90,9 +91,16 @@ impl ApplicationHandler<UserEvent> for Application {
     fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
         match cause {
             StartCause::Init => {
-                self.tray_icon = Some(self.new_tray_icon());
-                let rl = CFRunLoop::main().unwrap();
-                CFRunLoop::wake_up(&rl);
+                #[cfg(not(target_os = "linux"))]
+                {
+                    self.tray_icon = Some(self.new_tray_icon());
+                }
+                #[cfg(target_os = "macos")]
+                {
+                    use objc2_core_foundation::CFRunLoop;
+                    let rl = CFRunLoop::main().unwrap();
+                    CFRunLoop::wake_up(&rl);
+                }
                 event_loop.set_control_flow(ControlFlow::WaitUntil(self.next_switch));
             }
             StartCause::ResumeTimeReached { .. } => {
@@ -127,12 +135,24 @@ fn main() {
     }
 
     let mut builder = EventLoop::<UserEvent>::with_user_event();
+
+    #[cfg(target_os = "macos")]
     let event_loop = builder
         .with_activation_policy(ActivationPolicy::Accessory)
         .build()
         .unwrap();
 
+    #[cfg(target_os = "linux")]
+    let event_loop = builder.build().unwrap();
+
     let mut app = Application::new();
+
+    #[cfg(target_os = "linux")]
+    {
+        gtk::init().unwrap();
+        app.new_tray_icon();
+        gtk::main();
+    }
 
     if let Err(err) = event_loop.run_app(&mut app) {
         println!("Error: {err:?}");

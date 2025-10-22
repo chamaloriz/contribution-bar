@@ -149,11 +149,12 @@ fn main() {
     let mut app = Application::new();
 
     #[cfg(target_os = "linux")]
-    {
+    std::thread::spawn(|| {
         gtk::init().unwrap();
-        app.new_tray_icon();
+        let mut app = Application::new();
+        let _tray_icon = Application::new_tray_icon(&mut app);
         gtk::main();
-    }
+    });
 
     if let Err(err) = event_loop.run_app(&mut app) {
         println!("Error: {err:?}");

@@ -1,5 +1,5 @@
 use std::time::{Duration, Instant};
-use tray_icon::{TrayIcon, TrayIconBuilder};
+use tray_icon::{TrayIcon, TrayIconBuilder, menu::Menu};
 use winit::{
     application::ApplicationHandler,
     event::StartCause,
@@ -74,8 +74,9 @@ impl Application {
 
     fn new_tray_icon(&mut self) -> TrayIcon {
         let icon = self.generate_icon();
-
+        let tray_menu = Menu::new();
         TrayIconBuilder::new()
+            .with_menu(Box::new(tray_menu))
             .with_tooltip("Commit History")
             .with_icon(icon)
             .build()

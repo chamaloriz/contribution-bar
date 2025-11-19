@@ -42,5 +42,5 @@ nano $HOME/Library/Application\ Support/rs.contribution-bar/default-config.toml
 
 - [x] MacOS ARM
 - [x] MacOS x86
-- [ ] Linux
+- [x] Linux
 - [ ] Windows

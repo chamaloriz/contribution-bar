@@ -137,6 +137,11 @@ fn main() {
 
     let mut builder = EventLoop::<UserEvent>::with_user_event();
 
+    #[cfg(target_os = "windows")]
+    let event_loop = builder
+        .build()
+        .unwrap();
+
     #[cfg(target_os = "macos")]
     let event_loop = builder
         .with_activation_policy(ActivationPolicy::Accessory)

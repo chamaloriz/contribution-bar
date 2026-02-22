@@ -1,0 +1,2 @@
+// https://{domain}/api/v1/users/chamaloriz/heatmap
+// [{"timestamp":1768737600,"contributions":17},{"timestamp":1768752000,"contributions":1},{"timestamp":1769004900,"contributions":1},{"timestamp":1769005800,"contributions":6},{"timestamp":1769683500,"contributions":2}]

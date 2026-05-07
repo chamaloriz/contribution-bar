@@ -9,25 +9,34 @@ use winit::{
 #[cfg(target_os = "macos")]
 use winit::platform::macos::{ActivationPolicy, EventLoopBuilderExtMacOS};
 
+mod gitea;
 mod github;
 mod image;
-use github::get_contributions;
 use image::{generate_icon, load_icon};
 use serde::{Deserialize, Serialize};
 
 const REFRESH_DELAY_SECS: u64 = 3600;
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(default)]
 struct AppConfig {
     version: i32,
+    provider: String,
     github_username: String,
+    gitea_username: String,
+    gitea_server_url: String,
+    gitea_token: Option<String>,
 }
 
 impl ::std::default::Default for AppConfig {
     fn default() -> Self {
         Self {
-            version: 1,
+            version: 2,
+            provider: "gitea".to_string(),
             github_username: "chamaloriz".to_string(),
+            gitea_username: "chamaloriz".to_string(),
+            gitea_server_url: "https://gitea.selfhosted.be".to_string(),
+            gitea_token: None,
         }
     }
 }
@@ -51,11 +60,21 @@ impl Application {
     }
 
     fn generate_icon(&mut self) -> tray_icon::Icon {
-        let username = &self.config.github_username;
-        match get_contributions(username) {
+        let cfg = &self.config;
+        let result = match cfg.provider.as_str() {
+            "gitea" => gitea::get_contributions(
+                &cfg.gitea_server_url,
+                &cfg.gitea_username,
+                cfg.gitea_token.as_deref(),
+            )
+            .map_err(|e| format!("{e}")),
+            _ => github::get_contributions(&cfg.github_username).map_err(|e| format!("{e}")),
+        };
+
+        match result {
             Ok(contributions) => {
                 self.next_switch = Instant::now() + Duration::from_secs(REFRESH_DELAY_SECS);
-                generate_icon(contributions)
+                generate_icon(contributions, &cfg.provider)
             }
             Err(_error) => {
                 self.next_switch = Instant::now() + Duration::from_secs(30);

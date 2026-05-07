@@ -36,11 +36,11 @@ fn get_color(name: u8, provider: &str) -> Rgba<u8> {
     }
 }
 
-pub fn generate_image(contributions: Vec<u8>) -> RgbaImage {
+pub fn generate_image(contributions: Vec<u8>, provider: &str) -> RgbaImage {
     let mut img: RgbaImage = ImageBuffer::new(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     for (i, _value) in contributions.iter().enumerate().take(NUMBER_OF_SQUARES) {
-        let color = get_color(contributions[i], "gitea");
+        let color = get_color(contributions[i], provider);
         let x_start = i * (SQUARE_SIZE + SPACING);
 
         let square_center = ((x_start + SQUARE_SIZE / 2) as u32, (SQUARE_SIZE / 2) as u32);
@@ -68,8 +68,8 @@ pub fn generate_image(contributions: Vec<u8>) -> RgbaImage {
     img
 }
 
-pub fn generate_icon(contributions: Vec<u8>) -> tray_icon::Icon {
-    let img = generate_image(contributions);
+pub fn generate_icon(contributions: Vec<u8>, provider: &str) -> tray_icon::Icon {
+    let img = generate_image(contributions, provider);
     let rgba = img.into_raw();
     tray_icon::Icon::from_rgba(rgba, IMAGE_WIDTH, IMAGE_HEIGHT).expect("Failed to create icon")
 }
@@ -89,6 +89,6 @@ pub fn load_icon(icon: &str) -> tray_icon::Icon {
 #[test]
 pub fn generate_icon_file() {
     let testing_vec: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-    let img = generate_image(testing_vec);
+    let img = generate_image(testing_vec, "github");
     img.save("icon-test.png").expect("Failed to save image");
 }

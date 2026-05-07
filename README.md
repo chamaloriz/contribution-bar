@@ -7,11 +7,11 @@
   </a>
 </p>
 
-<p align="center">Track your GitHub activity, commits, and contributions with a minimal macOS menu bar widget.</p>
+<p align="center">Track your GitHub & Gitea activity, commits, and contributions with a minimal macOS menu bar widget.</p>
 
 ## Features
 
-- See your GitHub activity from the last 7 days in the macOS menu bar, using an <a href="https://github.com/grubersjoe/github-contributions-api" target="_blank">unofficial GitHub API</a>.
+- See your GitHub/Gitea activity from the last 7 days in the macOS menu bar, using an <a href="https://github.com/grubersjoe/github-contributions-api" target="_blank">unofficial GitHub API</a> & the official gitea api.
 <img src="assets/demo.png">
 
 ## Installation
@@ -37,6 +37,11 @@ After running the app a configuration file is generated at :
 # uses nano to edit the default-config.toml
 nano $HOME/Library/Application\ Support/rs.contribution-bar/default-config.toml
 ```
+
+## Supported git Platforms
+
+- [x] Gitea
+- [x] Github
 
 ## Supported Platforms
 
